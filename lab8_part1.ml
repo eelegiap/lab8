@@ -96,30 +96,47 @@ module MakeInterval (Endpoint : ORDERED_TYPE) =
        `high` inclusive. If `low` is greater than `high`, then the
        interval is empty. *)
     let create (low : Endpoint.t) (high : Endpoint.t) : interval =
-      failwith "create not implemented"
+      if Endpoint.compare low high < 0 then Interval (low, high)
+      else Empty
 
     (* is_empty intvl -- Returns true if and only if `intvl` is
        empty *)
     let is_empty (intvl : interval) : bool =
-      failwith "is_empty not implemented"
+      intvl = Empty 
 
     (* contains intvl x -- Returns true if and only if the value `x`
        is contained within `intvl` *)
     let contains (intvl : interval) (x : Endpoint.t) : bool =
-      failwith "contains not implemented"
+      match intvl with
+      | Interval (low, high) -> x <= high && x >= low
+      | Empty -> false
 
     (* intersect intvl1 intvl2 -- Returns the intersection of `intvl1`
        and `intvl2` *)
     let intersect (intvl1 : interval) (intvl2 : interval) : interval =
-      failwith "intersect not implemented"
+      match intvl1, intvl2 with
+      | Interval (l1, h1), Interval (l2, h2) -> 
+        if contains intvl1 l2 then create l2 h1
+        else if contains intvl2 h1 then create l2 h1
+        else Empty
+      | Empty, Interval _ 
+      | Interval _, Empty 
+      | Empty, Empty -> Empty
     end ;;
 
 (*......................................................................
 Exercise 1B: Using the completed functor above, instantiate an integer
 interval module.
 ......................................................................*)
+(* ordered type *)
 
-module IntInterval = struct end ;;
+
+module IntInterval = MakeInterval 
+                      (struct 
+                        type t = int
+                        let compare = 
+                          compare 
+                      end );;
 
 (*......................................................................
 Exercise 1C: Using your newly created integer interval module, create
